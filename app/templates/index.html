@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}AdBuilder Archive{% endblock %}
+{% block main %}
+  <div class="mdl-grid">
+   <div class="demo-charts mdl-color--white mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-grid">
+     <a href="/"><span class="mdl-layout-title">Orders</span></a>
+   </div>
+   <div id="content"></div>
+  </div>
+{% endblock %}
+{% block react %}
+  <script src="{{  url_for('static', filename='index.js') }}" type="text/jsx"></script>
+{% endblock %}

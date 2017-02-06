@@ -1,0 +1,11 @@
+mysql-python
+sqlalchemy
+Flask
+Flask-SQLAlchemy
+Flask-WTF
+Flask-Script
+Flask-Migrate
+simplejson
+html5lib==1.0b8
+xhtml2pdf
+marshmallow
