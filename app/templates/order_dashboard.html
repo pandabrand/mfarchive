@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block title %}AdBuilder Archive{% endblock %}
+{% block main %}
+  <div class="mdl-grid">
+   <div id="content" class="full_width"></div>
+  </div>
+{% endblock %}
+{% block react %}
+  <script src="{{  url_for('static', filename='order_dashboard.js') }}" type="text/jsx"></script>
+{% endblock %}

@@ -17,3 +17,5 @@ services:
     environment:
        MYSQL_ROOT_PASSWORD: p@ssw0rd123
        MYSQL_DATABASE: wordpress
+    volumes:
+     - ./data-dump:/data-dump

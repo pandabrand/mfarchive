@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-deep_purple.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='material.min.css')}}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
 </head>
 <body>
@@ -22,15 +22,16 @@
        </div>
      </header>
      <div class="mdl-layout__drawer">
-       <span class="mdl-layout-title">Search</span>
+       <span class="mdl-layout-title"><a href="/">Home</a></span>
        <nav class="mdl-navigation">
          <!-- Numeric Textfield -->
-         <div id="search-containerId" class="search-container">
-         </div>
-         <a class="mdl-navigation__link" href="">Division</a>
-         <a class="mdl-navigation__link" href="">District</a>
-         <a class="mdl-navigation__link" href="">Complex</a>
-         <a class="mdl-navigation__link" href="">Branch</a>
+         <div id="search-containerId" class="search-container"></div>
+
+         <a class="mdl-navigation__link" href="/order">Orders</a>
+         <a class="mdl-navigation__link" href="/division">Division</a>
+         <a class="mdl-navigation__link" href="/district">District</a>
+         <a class="mdl-navigation__link" href="/complex">Complex</a>
+         <a class="mdl-navigation__link" href="/branch">Branch</a>
        </nav>
      </div>
      <main class="mdl-layout__content mdl-color--grey-100">
@@ -43,11 +44,11 @@
      src="https://code.jquery.com/jquery-3.1.1.min.js"
      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
      crossorigin="anonymous"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.1.0/react.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.1.0/react-dom.js"></script>
-   <script src="http://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/JSXTransformer.js"></script>
-   <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-   <script src="{{  url_for('static', filename='search.js') }}" type="text/jsx"></script>
+   <script defer src="{{ url_for('static', filename='material.min.js') }}"></script>
+   <script defer src="{{  url_for('static', filename='search.js') }}" type="text/jsx"></script>
+   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/react/15.1.0/react.js"></script>
+   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/react/15.1.0/react-dom.js"></script>
+   <script defer src="http://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/JSXTransformer.js"></script>
    {% block react %}{% endblock %}
  </body>
 </html>

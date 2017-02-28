@@ -4,11 +4,11 @@
 {% block main %}
   <div class="mdl-grid">
    <div class="demo-charts mdl-color--white mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-grid">
-     <span class="mdl-layout-title">Orders</span>
+     <span class="mdl-layout-title">District</span>
    </div>
-   <div id="content"></div>
+   <div id="content" class="full_width"></div>
   </div>
 {% endblock %}
 {% block react %}
-  <script src="{{  url_for('static', filename='index.js') }}" type="text/jsx"></script>
+  <script src="{{  url_for('static', filename='district.js') }}" type="text/jsx"></script>
 {% endblock %}

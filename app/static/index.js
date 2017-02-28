@@ -69,7 +69,7 @@ class OrdersPage extends React.Component {
     }
 
     buildUrl() {
-      let request_url = (this.state.pageItems && this.state.pageItems.page) > 1 ? this.props.api_path+'/'+page_num : this.props.api_path;
+      let request_url = (this.state.pageItems && this.state.pageItems.page) > 1 ? this.props.api_path+'/order/'+page_num : this.props.api_path;
       let query_string = '?sort='+this.state.db_class+'&col='+this.state.db_col+'&direction='+this.getAllUrlParams().direction
       return request_url+query_string;
     }
@@ -78,7 +78,7 @@ class OrdersPage extends React.Component {
       let pathname = path == '1' ? '' : path;
       let params = window.location.search.slice(1).length > 0 ? '?'+window.location.search.slice(1) : window.location.search.slice(1);
       let request_url = path+params;
-      return '/'+request_url;
+      return '/order/'+request_url;
     }
 
     getAllUrlParams(url) {
@@ -146,7 +146,7 @@ class OrdersPage extends React.Component {
     buildLinkSort() {
       let _dir = this.getAllUrlParams().direction;
       let dir = !(_dir == 'asc') ? 'asc' : 'desc';
-      return '/'+this.state.pageItems.paginate.page+'?sort='+this.state.db_class+'&col='+this.state.db_col+'&direction='+dir
+      return '/order/'+this.state.pageItems.paginate.page+'?sort='+this.state.db_class+'&col='+this.state.db_col+'&direction='+dir
     }
 
     render() {

@@ -1,3 +1,6 @@
 **/.DS_Store
 .env
-data/
+data-dump/**
+**/*.pyc
+pickup/**
+pickup.zip

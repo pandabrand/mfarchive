@@ -25,6 +25,8 @@ WEB_FILE_PATH = '/static/data/'
 FULL_FILE_PATH = '/code/app/static/data/'
 
 def prepare_file_path(file):
+    if file is None:
+        return ''
     file_array = file.split('\\')
     file_element = file_array[-1]
     full_path = FULL_FILE_PATH + file_element
@@ -108,6 +110,9 @@ class Order(db.Model):
         for detail in self.approvalDetails:
             if detail.status_description == APPROVED and detail.user_role == SITE_ADMIN:
                 return self.date_created
+    @hybrid_property
+    def hi_res_path(self):
+        return prepare_file_path(self.hi_res_uri)
 
 class OrderStatus(db.Model):
     __tablename__ = 'cdg_order_status'
@@ -158,7 +163,7 @@ class DistrictSchema(Schema):
 class ComplexSchema(Schema):
     name = fields.String()
     is_active = fields.String()
-    complex_is = fields.String()
+    complex_id = fields.String()
 
 class BranchSchema(Schema):
     name = fields.String()

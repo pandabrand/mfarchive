@@ -7,7 +7,7 @@ app = Flask(__name__)
 DATABASE = 'newtest'
 PASSWORD = 'p@ssw0rd123'
 USER = 'root'
-HOSTNAME = 'flaskmysql_db_1'
+HOSTNAME = 'mfarchive_db_1'
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://%s:%s@%s/%s'%(USER, PASSWORD, HOSTNAME, DATABASE)

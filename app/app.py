@@ -7,7 +7,7 @@ import simplejson as json
 from sqlalchemy.exc import IntegrityError
 import os
 import logging, sys
-from sqlalchemy import or_
+from sqlalchemy import or_, extract
 import logging, sys
 import time
 
@@ -28,6 +28,34 @@ logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 sep = ';'
+
+NUM_OF_ORDERS = 0
+NUM_OF_ORDERS_FILES = 0
+NUM_OF_DIVISIONS = 0
+NUM_OF_DISTRICTS = 0
+NUM_OF_COMPLEXES = 0
+NUM_OF_BRANCHES = 0
+
+def get_counts():
+    logging.debug('updating orders')
+    orders_q = Order.query
+    orders_q = orders_q.filter(Order.fk_order_status_id == OrderStatus.pk_id).filter(or_(OrderStatus.name_for_display == 'Completed', OrderStatus.name_for_display == 'Ready for Download'))
+    orders_q = orders_q.filter(extract('year', Order.date_created) >= 2010)
+    orders = orders_q.all()
+    global NUM_OF_ORDERS, NUM_OF_ORDERS_FILES, NUM_OF_DIVISIONS, NUM_OF_DISTRICTS, NUM_OF_COMPLEXES, NUM_OF_BRANCHES
+    NUM_OF_ORDERS = len(orders)
+    for order in orders:
+        NUM_OF_ORDERS_FILES += 1 if order.hi_res_path else 0
+    logging.debug(NUM_OF_ORDERS_FILES)
+    divisions = Division.query.filter(Division.is_active == 'Y').all()
+    NUM_OF_DIVISIONS = len(divisions)
+    logging.debug(NUM_OF_DIVISIONS)
+    districts = District.query.filter(District.is_active == 'Y').all()
+    NUM_OF_DISTRICTS = len(districts)
+    complexes = Complex.query.filter(Complex.is_active == 'Y').all()
+    NUM_OF_COMPLEXES = len(complexes)
+    branches = Branch.query.filter(Branch.is_active == 'Y').all()
+    NUM_OF_BRANCHES = len(branches)
 
 # def filter_query(self, query):
 # 	# model_class = self._get_model_class(query) # returns the query's Model
@@ -83,15 +111,55 @@ def link_callback(uri, rel):
     return path
 
 # @app.route('/')
-@app.route('/', defaults={'page': 1})
-@app.route('/<int:page>')
+@app.route('/order/', defaults={'page': 1})
+@app.route('/order/<int:page>')
 def index(page):
 	# orders_q = Order.query.filter(Order.fk_order_status_id == OrderStatus.pk_id).filter(or_(OrderStatus.name_for_display == 'Completed', OrderStatus.name_for_display == 'Ready for Download'))
 	# orders = orders_q.paginate(page, PER_PAGE, False)
 	return render_template('index.html')
 
-@app.route('/api', defaults={'page': 1})
-@app.route('/api/<int:page>')
+@app.route('/')
+def dashboard():
+    return render_template('order_dashboard.html')
+
+@app.route('/division/', defaults={'page': 1})
+@app.route('/division/<int:page>')
+def division(page):
+	# orders_q = Order.query.filter(Order.fk_order_status_id == OrderStatus.pk_id).filter(or_(OrderStatus.name_for_display == 'Completed', OrderStatus.name_for_display == 'Ready for Download'))
+	# orders = orders_q.paginate(page, PER_PAGE, False)
+	return render_template('division.html')
+
+@app.route('/district/', defaults={'page': 1})
+@app.route('/district/<int:page>')
+def district(page):
+	# orders_q = Order.query.filter(Order.fk_order_status_id == OrderStatus.pk_id).filter(or_(OrderStatus.name_for_display == 'Completed', OrderStatus.name_for_display == 'Ready for Download'))
+	# orders = orders_q.paginate(page, PER_PAGE, False)
+	return render_template('district.html')
+
+
+@app.route('/complex/', defaults={'page': 1})
+@app.route('/complex/<int:page>')
+def complex(page):
+	# orders_q = Order.query.filter(Order.fk_order_status_id == OrderStatus.pk_id).filter(or_(OrderStatus.name_for_display == 'Completed', OrderStatus.name_for_display == 'Ready for Download'))
+	# orders = orders_q.paginate(page, PER_PAGE, False)
+	return render_template('complex.html')
+
+
+@app.route('/branch/', defaults={'page': 1})
+@app.route('/branch/<int:page>')
+def branch(page):
+	# orders_q = Order.query.filter(Order.fk_order_status_id == OrderStatus.pk_id).filter(or_(OrderStatus.name_for_display == 'Completed', OrderStatus.name_for_display == 'Ready for Download'))
+	# orders = orders_q.paginate(page, PER_PAGE, False)
+	return render_template('branch.html')
+
+@app.route('/api/order_and_file_count')
+def order_file_json():
+    if(NUM_OF_ORDERS < 1):
+        get_counts()
+    return jsonify({'num_orders':NUM_OF_ORDERS,'num_files':NUM_OF_ORDERS_FILES,'division_count':NUM_OF_DIVISIONS,'district_count':NUM_OF_DISTRICTS,'complex_count':NUM_OF_COMPLEXES,'branch_count':NUM_OF_BRANCHES})
+
+@app.route('/api/order/', defaults={'page': 1})
+@app.route('/api/order/<int:page>')
 def index_json(page):
 	sort = request.args.get('sort') if request.args.get('sort') is not None else 'Order'
 	sort_direction = request.args.get('direction') if request.args.get('direction') is not None else 'asc'
@@ -119,6 +187,106 @@ def index_json(page):
 	json_orders = order_schema.dump(items).data
 	return jsonify({'orders':json_orders, 'paginate':{'has_next':orders.has_next, 'has_prev':orders.has_prev, 'next_num':orders.next_num, 'prev_num':orders.prev_num, 'page':orders.page, 'pages':orders.pages, 'per_page':orders.per_page}})
 
+@app.route('/api/division/', defaults={'page': 1})
+@app.route('/api/division/<int:page>')
+def division_json(page):
+	sort = request.args.get('sort') if request.args.get('sort') is not None else 'Division'
+	sort_direction = request.args.get('direction') if request.args.get('direction') is not None else 'asc'
+	sort_col = request.args.get('col') if request.args.get('col') is not None else 'region_id'
+	sort_model = getattr(sys.modules[__name__], sort)
+	sort_col = getattr(sort_model, sort_col)
+	# search_req = request.args.get('search') if request.args.get('search') is not None else ''
+	# order_id = request.args.get('order_id') if request.args.get('order_id') is not None else ''
+
+	divisions_q = Division.query
+	divisions_q = divisions_q.filter(Division.is_active == 'Y')
+
+	if sort_direction == 'desc':
+		divisions_q = divisions_q.order_by(sort_col.desc())
+	else:
+		divisions_q = divisions_q.order_by(sort_col)
+
+	division_schema = DivisionSchema(many=True)
+	divisions = divisions_q.paginate(page, PER_PAGE, False)
+	items = divisions.items
+	json_divisions = division_schema.dump(items).data
+	return jsonify({'divisions':json_divisions, 'paginate':{'has_next':divisions.has_next, 'has_prev':divisions.has_prev, 'next_num':divisions.next_num, 'prev_num':divisions.prev_num, 'page':divisions.page, 'pages':divisions.pages, 'per_page':divisions.per_page}})
+
+
+@app.route('/api/district/', defaults={'page': 1})
+@app.route('/api/district/<int:page>')
+def district_json(page):
+	sort = request.args.get('sort') if request.args.get('sort') is not None else 'District'
+	sort_direction = request.args.get('direction') if request.args.get('direction') is not None else 'asc'
+	sort_col = request.args.get('col') if request.args.get('col') is not None else 'area_number'
+	sort_model = getattr(sys.modules[__name__], sort)
+	sort_col = getattr(sort_model, sort_col)
+	# search_req = request.args.get('search') if request.args.get('search') is not None else ''
+	# order_id = request.args.get('order_id') if request.args.get('order_id') is not None else ''
+
+	districts_q = District.query
+	districts_q = districts_q.filter(District.is_active == 'Y')
+
+	if sort_direction == 'desc':
+		districts_q = districts_q.order_by(sort_col.desc())
+	else:
+		districts_q = districts_q.order_by(sort_col)
+
+	district_schema = DistrictSchema(many=True)
+	districts = districts_q.paginate(page, PER_PAGE, False)
+	items = districts.items
+	json_districts = district_schema.dump(items).data
+	return jsonify({'districts':json_districts, 'paginate':{'has_next':districts.has_next, 'has_prev':districts.has_prev, 'next_num':districts.next_num, 'prev_num':districts.prev_num, 'page':districts.page, 'pages':districts.pages, 'per_page':districts.per_page}})
+
+@app.route('/api/complex/', defaults={'page': 1})
+@app.route('/api/complex/<int:page>')
+def complex_json(page):
+	sort = request.args.get('sort') if request.args.get('sort') is not None else 'Complex'
+	sort_direction = request.args.get('direction') if request.args.get('direction') is not None else 'asc'
+	sort_col = request.args.get('col') if request.args.get('col') is not None else 'complex_id'
+	sort_model = getattr(sys.modules[__name__], sort)
+	sort_col = getattr(sort_model, sort_col)
+	# search_req = request.args.get('search') if request.args.get('search') is not None else ''
+	# order_id = request.args.get('order_id') if request.args.get('order_id') is not None else ''
+
+	complexes_q = Complex.query
+	complexes_q = complexes_q.filter(Complex.is_active == 'Y')
+
+	if sort_direction == 'desc':
+		complexes_q = complexes_q.order_by(sort_col.desc())
+	else:
+		complexes_q = complexes_q.order_by(sort_col)
+
+	complex_schema = ComplexSchema(many=True)
+	complexes = complexes_q.paginate(page, PER_PAGE, False)
+	items = complexes.items
+	json_complexes = complex_schema.dump(items).data
+	return jsonify({'complexes':json_complexes, 'paginate':{'has_next':complexes.has_next, 'has_prev':complexes.has_prev, 'next_num':complexes.next_num, 'prev_num':complexes.prev_num, 'page':complexes.page, 'pages':complexes.pages, 'per_page':complexes.per_page}})
+
+@app.route('/api/branch/', defaults={'page': 1})
+@app.route('/api/branch/<int:page>')
+def branch_json(page):
+	sort = request.args.get('sort') if request.args.get('sort') is not None else 'Branch'
+	sort_direction = request.args.get('direction') if request.args.get('direction') is not None else 'asc'
+	sort_col = request.args.get('col') if request.args.get('col') is not None else 'branch_id'
+	sort_model = getattr(sys.modules[__name__], sort)
+	sort_col = getattr(sort_model, sort_col)
+	# search_req = request.args.get('search') if request.args.get('search') is not None else ''
+	# order_id = request.args.get('order_id') if request.args.get('order_id') is not None else ''
+
+	branches_q = Branch.query
+	branches_q = branches_q.filter(Branch.is_active == 'Y').filter(Branch.branch_id != '000000')
+
+	if sort_direction == 'desc':
+		branches_q = branches_q.order_by(sort_col.desc())
+	else:
+		branches_q = branches_q.order_by(sort_col)
+
+	branch_schema = BranchSchema(many=True)
+	branches = branches_q.paginate(page, PER_PAGE, False)
+	items = branches.items
+	json_branches = branch_schema.dump(items).data
+	return jsonify({'branches':json_branches, 'paginate':{'has_next':branches.has_next, 'has_prev':branches.has_prev, 'next_num':branches.next_num, 'prev_num':branches.prev_num, 'page':branches.page, 'pages':branches.pages, 'per_page':branches.per_page}})
 
 @app.route('/arf/<int:orderId>')
 def arf(orderId):
@@ -136,60 +304,6 @@ def generatePdf(pdf_data):
 	rendered = pdf.getvalue()
 	pdf.close()
 	return rendered
-# @app.route('/user')
-# def show_user():
-# 	#return json.dumps({'username':request.args['username']})
-# 	try:
-# 		user = User.query.filter_by(username=request.args['username']).first_or_404()
-# 		return json.dumps({user.username:{ 'email': user.email, 'phone': user.phone,'fax':user.fax}})
-# 	except IntegrityError:
-# 		return json.dumps({})
-
-# http://localhost/
-# @app.route('/insert')
-# def insert_user():
-# 	try:
-# 		user = User(request.args['username'],
-# 				request.args['email'],
-# 				request.args['phone'],
-# 				request.args['fax'])
-# 		db.session.add(user)
-# 		db.session.commit()
-# 		return json.dumps({'status':True})
-# 	except IntegrityError:
-# 		return json.dumps({'status':False})
-
-# @app.route('/createtbl')
-# def createUserTable():
-# 	try:
-# 		db.create_all()
-# 		return json.dumps({'status':True})
-# 	except IntegrityError:
-# 		return json.dumps({'status':False})
-
-@app.route('/users')
-def users():
-	try:
-		users = User.query.all()
-		users_dict = {}
-		for user in users:
-			users_dict[user.username] = {
-							'new login': user.new_login,
-						    }
-
-		return json.dumps(users_dict)
-	except IntegrityError:
-		return json.dumps({})
-#
-# @app.route('/createdb')
-# def createDatabase():
-# 	HOSTNAME = 'localhost'
-# 	try:
-# 		HOSTNAME = request.args['hostname']
-# 	except:
-# 		pass
-# 	database = CreateDB(hostname = HOSTNAME)
-# 	return json.dumps({'status':True})
 
 @app.route('/info')
 def app_status():
@@ -198,3 +312,4 @@ def app_status():
 # run app service
 if __name__ == "__main__":
 	app.run(host="0.0.0.0", port=8082, debug=True)
+	get_counts()
